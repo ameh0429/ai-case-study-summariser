@@ -5,6 +5,24 @@ function App() {
   const [summary, setSummary] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const cleanAndSplitSummary = (text) => {
+    return text
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .map((line) =>
+        line.replace(/^[-•\s]+/, "") // remove leading hyphens, bullets, spaces
+      )
+      .flatMap((line) => {
+        // If line is too long, split into shorter sentences
+        if (line.length > 140) {
+          return line.split(/\. |; |, and |, but /).map((part) => part.trim());
+        }
+        return [line];
+      })
+      .filter((line) => line.length > 0);
+  };
+
   const handleSummarize = async () => {
     if (!inputText.trim()) return;
 
@@ -20,9 +38,12 @@ function App() {
 
       const data = await response.json();
 
-      // assume backend sends: { summary: ["point1", "point2", ...] }
-      if (data.summary && Array.isArray(data.summary)) {
-        setSummary(data.summary);
+      if (data.summary) {
+        const points = Array.isArray(data.summary)
+          ? data.summary
+          : cleanAndSplitSummary(data.summary);
+
+        setSummary(points);
       } else {
         setSummary(["No summary returned."]);
       }
@@ -65,9 +86,7 @@ function App() {
 
         {/* Summary Output */}
         <div className="bg-gray-50 border rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-700 mb-3">
-            Summary:
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-700 mb-3">Summary:</h2>
           {summary.length > 0 ? (
             <ul className="list-disc list-inside space-y-2 text-gray-800 text-lg">
               {summary.map((point, index) => (
@@ -87,36 +106,48 @@ export default App;
 
 
 
-
 // import { useState } from "react";
 
 // function App() {
 //   const [inputText, setInputText] = useState("");
 //   const [summary, setSummary] = useState([]);
+//   const [loading, setLoading] = useState(false);
 
 //   const handleSummarize = async () => {
-//     if (!inputText.trim()) return;
+//   if (!inputText.trim()) return;
 
-//     try {
-//       const response = await fetch("http://localhost:5000/summarise", {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ text: inputText }),
-//       });
+//   setLoading(true);
+//   setSummary([]); // clear previous summary
 
-//       const data = await response.json();
+//   try {
+//     const response = await fetch("http://localhost:5000/summarise", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({ text: inputText }),
+//     });
 
-//       // assume backend sends: { summary: ["point1", "point2", ...] }
-//       if (data.summary) {
-//         setSummary(data.summary);
-//       } else {
-//         setSummary(["No summary returned."]);
-//       }
-//     } catch (error) {
-//       console.error("Error:", error);
-//       setSummary(["Error fetching summary."]);
+//     const data = await response.json();
+
+//     if (data.summary) {
+//       // If summary is a string, split into lines
+//       const points = Array.isArray(data.summary)
+//         ? data.summary
+//         : data.summary
+//             .split("\n")
+//             .map((line) => line.trim())
+//             .filter((line) => line.length > 0);
+
+//       setSummary(points);
+//     } else {
+//       setSummary(["No summary returned."]);
 //     }
-//   };
+//   } catch (error) {
+//     console.error("Error:", error);
+//     setSummary(["Error fetching summary."]);
+//   } finally {
+//     setLoading(false);
+//   }
+// };
 
 //   return (
 //     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
@@ -134,14 +165,17 @@ export default App;
 //           onChange={(e) => setInputText(e.target.value)}
 //         />
 
-        
-
 //         {/* Summarize Button */}
 //         <button
 //           onClick={handleSummarize}
-//           className="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition"
+//           disabled={loading}
+//           className={`w-full py-3 rounded-lg text-lg font-semibold transition ${
+//             loading
+//               ? "bg-gray-400 cursor-not-allowed"
+//               : "bg-blue-600 text-white hover:bg-blue-700"
+//           }`}
 //         >
-//           Summarise
+//           {loading ? "Summarising..." : "Summarise"}
 //         </button>
 
 //         {/* Summary Output */}
@@ -151,14 +185,12 @@ export default App;
 //           </h2>
 //           {summary.length > 0 ? (
 //             <ul className="list-disc list-inside space-y-2 text-gray-800 text-lg">
-//               console.log("summary is:", summary);
-
 //               {summary.map((point, index) => (
 //                 <li key={index}>{point}</li>
 //               ))}
 //             </ul>
 //           ) : (
-//             <p className="text-gray-500">No summary yet.</p>
+//             !loading && <p className="text-gray-500">No summary yet.</p>
 //           )}
 //         </div>
 //       </div>

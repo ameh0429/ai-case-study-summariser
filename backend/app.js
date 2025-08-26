@@ -15,15 +15,17 @@ const HF_API_URL = "https://api-inference.huggingface.co/models/facebook/bart-la
 
 
 async function querryHuggingFace(text) {
-    const response = await fetch(HF_API_URL, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${process.env.HF_API_KEY}`,
-            "Content-Type": "application/json", 
-        },
-        body: JSON.stringify({inputs: `Summarize the following text into 3-5 bullet points:\n\n${text}`}),
-    });
-    return await response.json();
+  const response = await fetch(HF_API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.HF_API_KEY}`,
+      "Content-Type": "application/json", 
+    },
+    body: JSON.stringify({
+      inputs: `Summarize the following case study into 8-12 bullet points. Cover all sections: Background, Problem Statement, Objectives, Solution Approach, and Technical Implementation.\n\n${text}`
+    }),
+  });
+  return await response.json();
 };
 
 // Convert plain summary into bullet-point format
@@ -60,3 +62,5 @@ app.post("/summarise", async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
+
