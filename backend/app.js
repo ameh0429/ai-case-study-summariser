@@ -13,7 +13,6 @@ app.use(express.json())
 // Hugging Face Summarizer Model
 const HF_API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn";
 
-
 async function querryHuggingFace(text) {
   const response = await fetch(HF_API_URL, {
     method: "POST",
@@ -22,7 +21,11 @@ async function querryHuggingFace(text) {
       "Content-Type": "application/json", 
     },
     body: JSON.stringify({
-      inputs: `Summarize the following case study into 8-12 bullet points. Cover all sections: Background, Problem Statement, Objectives, Solution Approach, and Technical Implementation.\n\n${text}`
+      inputs: `Summarize the following case study into 10-12 bullet points. Cover all sections: Background, Problem Statement, Objectives, Solution Approach, and Technical Implementation.\n\n${text}`,
+      parameters: {
+        min_length: 200,
+        max_length: 400
+      }
     }),
   });
   return await response.json();
@@ -31,6 +34,8 @@ async function querryHuggingFace(text) {
 // Convert plain summary into bullet-point format
 function formatAsBullets(summary) {
   return summary
+    .replace(/([.?!])\s+(?=[A-Z])/g, "$1\n") // Add line breaks after sentence endings
+    .replace(/([.?!])\s+/g, "$1\n") // Add line breaks after punctuation
     .split(/(?<=[.!?])\s+/) // split by sentences
     .filter((s) => s.trim().length > 0) // remove empty
     .map((s) => "- " + s.trim()) // add bullet
