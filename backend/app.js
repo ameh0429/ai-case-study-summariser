@@ -7,8 +7,12 @@ const app = express();
 dotenv.config();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
-app.use(express.json())
+app.use(express.json());
+app.use(cors({
+  origin: ["https://ai-case-study-summariser-ilfn.vercel.app"],
+  method: "POST",
+  credentials: true
+}));
 
 // Hugging Face Summarizer Model
 const HF_API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn";
