@@ -23,6 +23,9 @@ function App() {
       .filter((line) => line.length > 0);
   };
 
+  const API_BASE_URL = process.env.REACT_APP_API_URL ||
+  "http://localhost:5000";
+
   const handleSummarize = async () => {
     if (!inputText.trim()) return;
 
@@ -30,7 +33,7 @@ function App() {
     setSummary([]); // clear previous summary
 
     try {
-      const response = await fetch("http://localhost:5000/summarise", {
+      const response = await fetch(`${API_BASE_URL}/summarise`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: inputText }),
