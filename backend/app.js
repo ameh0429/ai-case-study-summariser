@@ -25,7 +25,7 @@ async function querryHuggingFace(text) {
       "Content-Type": "application/json", 
     },
     body: JSON.stringify({
-      // inputs: `Summarize the following case study into 10-12 bullet points. Cover all sections: Background, Problem Statement, Objectives, Solution Approach, and Technical Implementation.\n\n${text}`,
+      inputs: `Summarize the following case study into 10-12 bullet points. Cover all sections: Background, Problem Statement, Objectives, Solution Approach, and Technical Implementation.\n\n${text}`,
       parameters: {
         min_length: 200,
         max_length: 400
